@@ -35,6 +35,7 @@ class SequenceGenerator(nn.Module):
         symbols_to_strip_from_output=None,
         lm_model=None,
         lm_weight=1.0,
+        noise=0.0,
     ):
         """Generates translations of a given source sentence.
 
@@ -57,6 +58,8 @@ class SequenceGenerator(nn.Module):
                 sharper samples (default: 1.0)
             match_source_len (bool, optional): outputs should match the source
                 length (default: False)
+            noise (float, optional): the noise that is added to logit values
+                during generation (default: 0.0)
         """
         super().__init__()
         if isinstance(models, EnsembleModel):
@@ -85,6 +88,7 @@ class SequenceGenerator(nn.Module):
         self.unk_penalty = unk_penalty
         self.temperature = temperature
         self.match_source_len = match_source_len
+        self.noise = noise
 
         if no_repeat_ngram_size > 0:
             self.repeat_ngram_blocker = NGramRepeatBlock(no_repeat_ngram_size)
@@ -324,6 +328,12 @@ class SequenceGenerator(nn.Module):
                 incremental_states,
                 self.temperature,
             )
+            # adding noise
+            if self.noise > 0.0:
+                noise = torch.rand(lprobs.shape, device=lprobs.device) * self.noise
+                lprobs += noise
+                # we need to renormalize log-probabilities
+                lprobs = torch.log_softmax(lprobs, dim=1)
 
             if self.lm_model is not None:
                 lm_out = self.lm_model(tokens[:, : step + 1])

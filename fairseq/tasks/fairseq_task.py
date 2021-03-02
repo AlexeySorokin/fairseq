@@ -441,6 +441,7 @@ class FairseqTask(object):
             unk_penalty=getattr(args, "unkpen", 0),
             temperature=getattr(args, "temperature", 1.0),
             match_source_len=getattr(args, "match_source_len", False),
+            noise=getattr(args, "noise", 0.0),
             no_repeat_ngram_size=getattr(args, "no_repeat_ngram_size", 0),
             search_strategy=search_strategy,
             **extra_gen_cls_kwargs,
