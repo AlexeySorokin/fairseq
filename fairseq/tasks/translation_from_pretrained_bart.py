@@ -50,6 +50,7 @@ class TranslationFromPretrainedBARTTask(TranslationTask):
         # fmt: on
 
     def __init__(self, args, src_dict, tgt_dict):
+        self.args = args
         super().__init__(args, src_dict, tgt_dict)
         self.langs = args.langs.split(",")
         for d in [src_dict, tgt_dict]:
